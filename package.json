@@ -1,0 +1,21 @@
+{
+  "name": "cpt",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "bin": {
+    "cpt": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "files": [
+    "src/",
+    "config.json"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "ws": "^8.20.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+    "username": "",
+    "password": "",
+    "apiKey": "",
+    "environment": "demo",
+    "epic": "BTCUSD",
+    "orderSize": "0.025",
+    "timeframe": "MINUTE",
+    "anthropicKey": "",
+    "tokens": "15000",
+    "max": "1000",
+    "tp": "1.00075",
+    "sl": "1.00075"
+}
