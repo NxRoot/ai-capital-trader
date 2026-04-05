@@ -1,8 +1,8 @@
-const { join, dirname } = require('path');
+const { join } = require('path');
 const { existsSync, readFileSync } = require('fs');
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const cpath = (p) => process.env?.PROMPT ? join(__dirname, "..", "..", p) : join(dirname(process.argv[0]), p);
+const cpath = (p) => join(__dirname, "..", "..", p);
 
 const cfg = cpath("config.json");
 const required = ["username", "password", "apiKey", "epic", "timeframe", "orderSize", "environment", "tp", "sl"]
