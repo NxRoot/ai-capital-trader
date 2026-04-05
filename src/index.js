@@ -28,18 +28,22 @@ let started = false
 
 const openPosition = async (trade) => {
     const order = await CapitalOpen(tokens, { epic: config.epic, direction: trade.signal, size: Number(config.orderSize) });
-    const tp = trade?.signal === "BUY" ? order?.level * Number(config.tp) : order?.level / Number(config.tp)
-    const sl = trade?.signal === "BUY" ? order?.level / Number(config.sl) : order?.level * Number(config.sl)
-    if(trade?.signal === "BUY") console.green(`[OPEN-BUY] Price: ${order?.level?.toFixed(2)} | Take Profit: ${tp?.toFixed(2)} | Stop Loss: ${sl?.toFixed(2)}`)
-    else console.red(`[OPEN-SELL] Price: ${order?.level?.toFixed(2)} | Take Profit: ${tp?.toFixed(2)} | Stop Loss: ${sl?.toFixed(2)}`)
-    if (!order.error) open = { direction: trade.signal, price: order?.level, dealId: order?.dealId, tp, sl }
+    if (!order.error && order?.dealId && trade?.signal) {
+        const tp = trade?.signal === "BUY" ? order?.level * Number(config.tp) : order?.level / Number(config.tp)
+        const sl = trade?.signal === "BUY" ? order?.level / Number(config.sl) : order?.level * Number(config.sl)
+        open = { direction: trade.signal, price: order?.level, dealId: order?.dealId, tp, sl }
+        if(trade?.signal === "BUY") console.green(`[OPEN-BUY] Price: ${order?.level?.toFixed(2)} | Take Profit: ${tp?.toFixed(2)} | Stop Loss: ${sl?.toFixed(2)}`)
+        else console.red(`[OPEN-SELL] Price: ${order?.level?.toFixed(2)} | Take Profit: ${tp?.toFixed(2)} | Stop Loss: ${sl?.toFixed(2)}`)
+    }
     else console.red(`[ERROR] ${JSON.stringify(order.error)}`)
 }
 
 const closePosition = async (price, profit) => {
-    const order = await CapitalClose(tokens, open.dealId);
-    console.yellow(`[CLOSE-${open?.direction}] Price: ${price?.toFixed(2)} | Profit: ${profit?.toFixed(2)}`)
-    if (!order.error) open = null
+    const order = await CapitalClose(tokens, open?.dealId);
+    if (!order.error) {
+        open = null
+        console.yellow(`[CLOSE-${open?.direction}] Price: ${price?.toFixed(2)} | Profit: ${profit?.toFixed(2)}`)
+    }
     else console.red(`[ERROR] ${JSON.stringify(order.error)}`)
 }
 
@@ -57,12 +61,10 @@ const onUpdate = async (payload) => {
     data.push(streamToCandle(payload))
     const price = data[data.length - 1].close
     
-    
     // Close position if open
-    if(open) {
+    if(open?.dealId) {
 
         const isBuy = open?.direction === "BUY"
-
         const currentPrice = price * Number(config.orderSize)
         const openPrice = open.price * Number(config.orderSize)
 
@@ -88,11 +90,13 @@ const onUpdate = async (payload) => {
     const response = await callAnthropic(config, [{ role: 'user', content: prompt }])
 
     // Check for trade
-    if(response && response?.signal !== "HOLD" && response?.confidence !== 'LOW') {
+    if((response?.signal === "BUY" || response?.signal === "SELL") && response?.confidence !== 'LOW') {
         return await openPosition(response)
     }
 
-    console.white(`[HOLD] ${response?.reasoning}`)
+    if(response?.signal === "HOLD") {
+        console.white(`[HOLD] ${response?.reasoning}`)
+    }
 }
 
 
