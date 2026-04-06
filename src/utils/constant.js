@@ -20,11 +20,7 @@ const missing = (keys, cfg) => {
 }
 
 const conf = (cfg) => {
-    if (cfg) {
-        cfg = resolve(cfg); // user provided path
-    } else {
-        cfg = join(process.cwd(), "config.json"); // default in current dir
-    }
+    cfg = cfg ? resolve(cfg) : join(process.cwd(), "config.json")
     if (!existsSync(cfg)) {
         console.error("Missing config.json file. Create one in the root directory with your Capital API credentials and trading preferences.")
         console.log(`Edit Config: ${cfg}`)
