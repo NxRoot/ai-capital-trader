@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 process.removeAllListeners('warning');
 
+const args = process.argv.slice(2); // removes node + script path
+const firstArg = args[0];
+
 const { CapitalLogin, CapitalPrices, CapitalOpen, CapitalClose, CapitalStream, toCandle, streamToCandle } = require('./utils/capital');
 const { conf, delay } = require('./utils/constant');
 const { makePrompt } = require('./utils/generate');
@@ -12,7 +15,7 @@ const { callAnthropic } = require('./utils/generate');
 // #                 Global Variables               #
 // ##################################################
 
-const config = conf()
+const config = conf(firstArg)
 const tokens = { apiKey: config?.apiKey }
 
 let data = []

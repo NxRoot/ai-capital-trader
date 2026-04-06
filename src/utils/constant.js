@@ -1,10 +1,7 @@
-const { join } = require('path');
+const { resolve, join } = require('path');
 const { existsSync, readFileSync } = require('fs');
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const cpath = (p) => join(__dirname, "..", "..", p);
-
-const cfg = cpath("config.json");
 const required = ["username", "password", "apiKey", "epic", "timeframe", "orderSize", "environment", "tp", "sl"]
 
 global.console.red = (txt) => console.log(`\x1b[31m${new Date().toLocaleTimeString()}`, txt, '\x1b[0m')
@@ -12,24 +9,30 @@ global.console.white = (txt) => console.log(`\x1b[0m${new Date().toLocaleTimeStr
 global.console.green = (txt) => console.log(`\x1b[32m${new Date().toLocaleTimeString()}`, txt, '\x1b[0m')
 global.console.yellow = (txt) => console.log(`\x1b[33m${new Date().toLocaleTimeString()}`, txt, '\x1b[0m')
 
-const missing  = (keys) => {
+const missing = (keys, cfg) => {
     console.log("")
     console.log("\x1b[31mMISSING REQUIRED PROPERTIES\x1b[0m\n")
     console.log(`Edit Config: ${cfg}`)
     console.log("")
-    for(const key of keys) console.log(`\x1b[33m${key}\x1b[0m is required but not set.`)
+    for (const key of keys) console.log(`\x1b[33m${key}\x1b[0m is required but not set.`)
     console.log("")
     process.exit(0);
 }
 
-const conf = () => {
+const conf = (cfg) => {
+    if (cfg) {
+        cfg = resolve(cfg); // user provided path
+    } else {
+        cfg = join(process.cwd(), "config.json"); // default in current dir
+    }
     if (!existsSync(cfg)) {
         console.error("Missing config.json file. Create one in the root directory with your Capital API credentials and trading preferences.")
+        console.log(`Edit Config: ${cfg}`)
         process.exit(1)
     }
     const res = JSON.parse(readFileSync(cfg, 'utf-8'));
-    if(!required?.every(k => res?.[k])) {
-        missing(required?.filter(k => !res?.[k]));
+    if (!required?.every(k => res?.[k])) {
+        missing(required?.filter(k => !res?.[k]), cfg);
     }
     return res;
 }
