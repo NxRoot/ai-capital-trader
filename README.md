@@ -2,6 +2,9 @@
 
 An automated trading bot for [Capital.com](https://capital.com) with AI decision making via Claude or ChatGPT.
 
+<img width="100%" height="100%" alt="cpt" src="https://github.com/user-attachments/assets/c9e303f8-2e45-44c5-8af9-9087edd6d952" />
+
+
 ## Features
 
 - **Capital Live Trading** — Connects to Capital.com via REST API and WebSocket for real-time order execution
