@@ -41,8 +41,8 @@ const openPosition = async (trade) => {
 const closePosition = async (price, profit) => {
     const order = await CapitalClose(tokens, open?.dealId);
     if (!order.error) {
-        open = null
         console.yellow(`[CLOSE-${open?.direction}] Price: ${price?.toFixed(2)} | Profit: ${profit?.toFixed(2)}`)
+        open = null
     }
     else console.red(`[ERROR] ${JSON.stringify(order.error)}`)
 }
