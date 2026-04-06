@@ -33,7 +33,7 @@ async function callOpenAI(config, messages, model = 'gpt-4o') {
 
 
 /** Makes a prompt for the AI assistant. */
-const makePrompt = (cfg, candle, metrics, structure) => `You are an expert trader. Your goal is to find PROFITABLE trades.
+const makePrompt = (cfg, candles, metrics, structure) => `You are an expert trader. Your goal is to find PROFITABLE trades.
             
 # CONFIG
 EPIC: ${cfg.epic}
@@ -41,12 +41,22 @@ ORDER SIZE: ${Number(cfg.orderSize)}
 TIMEFRAME: ${cfg.timeframe}
 
 
-# CANDLE
-CLOSE: ${candle.close}
-OPEN: ${candle.open}
-HIGH: ${candle.high}
-LOW: ${candle.low}
-VOLUME: ${candle.volume}
+# CANDLES
+CLOSE: ${candles?.[candles.length - 1].close}
+OPEN: ${candles?.[candles.length - 1].open}
+HIGH: ${candles?.[candles.length - 1].high}
+LOW: ${candles?.[candles.length - 1].low}
+VOLUME: ${candles?.[candles.length - 1].volume}
+COLOR: ${candles?.[candles.length - 1].close > candles?.[candles.length - 1].open ? "GREEN" : "RED"}
+DIFFERENCE: ${((candles?.[candles.length - 1].close - candles?.[candles.length - 1].open) / candles?.[candles.length - 1].open) * 100}%
+
+PREV_CLOSE: ${candles?.[candles.length - 2].close}
+PREV_OPEN: ${candles?.[candles.length - 2].open}
+PREV_HIGH: ${candles?.[candles.length - 2].high}
+PREV_LOW: ${candles?.[candles.length - 2].low}
+PREV_VOLUME: ${candles?.[candles.length - 2].volume}
+PREV_COLOR: ${candles?.[candles.length - 2].close > candles?.[candles.length - 2].open ? "GREEN" : "RED"}
+PREV_DIFFERENCE: ${(candles?.[candles.length - 2].close - candles?.[candles.length - 2].open) / candles?.[candles.length - 2].open * 100}%
 
 
 # INDICATORS

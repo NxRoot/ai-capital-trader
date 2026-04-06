@@ -84,7 +84,7 @@ const onUpdate = async (payload) => {
     const structure = calcStructure(data)
 
     // Make prompt
-    const prompt = makePrompt(config, data[data.length - 1], metrics, structure)
+    const prompt = makePrompt(config, data, metrics, structure)
 
     // Call AI
     const response = await callAnthropic(config, [{ role: 'user', content: prompt }])
@@ -149,6 +149,8 @@ const main = async () => {
         console.log(`Environment: ${config?.environment}`)
         console.log(`Total Balance: ${login?.account?.currencySymbol} ${(login?.account?.accountInfo?.balance ?? 0).toFixed(2)}`)
         console.log(`Available Balance: ${login?.account?.currencySymbol} ${(login?.account?.accountInfo?.available ?? 0).toFixed(2)}`)
+        console.log(`Take Profit: ${(Number(config?.tp) ?? 0)}`)
+        console.log(`Stop Loss: ${(Number(config?.sl) ?? 0)}`)
         console.log("")
         started = true
     }
