@@ -1,14 +1,23 @@
 const { resolve, join } = require('path');
 const { existsSync, readFileSync } = require('fs');
 
+
+// Utility function to create a delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+
+// List of required configuration properties
 const required = ["username", "password", "apiKey", "epic", "timeframe", "orderSize", "environment", "tp", "sl"]
 
+
+// Custom console log functions with timestamps and colors
 global.console.red = (txt) => console.log(`\x1b[31m${new Date().toLocaleTimeString()}`, txt, '\x1b[0m')
 global.console.white = (txt) => console.log(`\x1b[0m${new Date().toLocaleTimeString()}`, txt, '\x1b[0m')
 global.console.green = (txt) => console.log(`\x1b[32m${new Date().toLocaleTimeString()}`, txt, '\x1b[0m')
 global.console.yellow = (txt) => console.log(`\x1b[33m${new Date().toLocaleTimeString()}`, txt, '\x1b[0m')
 
+
+// Function to display missing required properties and exit the process
 const missing = (keys, cfg) => {
     console.log("")
     console.log("\x1b[31mMISSING REQUIRED PROPERTIES\x1b[0m\n")
@@ -19,6 +28,8 @@ const missing = (keys, cfg) => {
     process.exit(0);
 }
 
+
+// Function to load and validate configuration from a JSON file
 const conf = (cfg) => {
     cfg = cfg ? resolve(cfg) : join(process.cwd(), "config.json")
     if (!existsSync(cfg)) {
@@ -32,5 +43,6 @@ const conf = (cfg) => {
     }
     return res;
 }
+
 
 module.exports = { delay, conf }

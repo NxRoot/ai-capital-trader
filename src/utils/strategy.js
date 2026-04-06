@@ -98,6 +98,7 @@ const calcMetrics = (candles) => {
     };
 };
 
+
 /** Calculates the structure for the given candles. */
 const calcStructure = (candles) => {
     if (candles.length < 30) return {};

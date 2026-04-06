@@ -12,6 +12,7 @@ const headers = tokens => ({
     ...(tokens?.securityToken ? { "X-SECURITY-TOKEN": tokens?.securityToken } : {})
 })
 
+
 /** Capital prices to candle object. */
 function toCandle(candle) {
     const pick = (price) => price?.bid ?? price?.lastTraded ?? 0;
@@ -25,6 +26,7 @@ function toCandle(candle) {
     };
 }
 
+
 /** Capital stream to candle object. */
 function streamToCandle(candle) {
     return {
@@ -37,10 +39,8 @@ function streamToCandle(candle) {
     };
 }
 
-/**
- * Login to the Capital API and retrieve session tokens.
- * @returns {} An object containing the session tokens if successful, or an error if failed.
-*/
+
+/** Login to the Capital API and retrieve session tokens. */
 const CapitalLogin = async (tokens, data) => {
     const request = (await fetch(CapitalURL(tokens?.environment) + "/api/v1/session", {
         method: "POST",
@@ -54,20 +54,16 @@ const CapitalLogin = async (tokens, data) => {
     return { cst, securityToken, account: res }
 }
 
-/**
- * Get all open positions from Capital API.
- * @returns {} An object containing all open positions and their information.
-*/
+
+/** Get all open positions from Capital API. */
 const CapitalPositions = async (tokens) => {
     const res = await (await fetch(CapitalURL(tokens?.environment) + "/api/v1/positions", { headers: headers(tokens) })).json();
     if (res?.errorCode) return { error: res };
     return { positions: res?.positions }
 }
 
-/**
- * Get market bar values from Capital API.
- * @returns {} An object containing all bars for a specific market.
-*/
+
+/** Get market bar values from Capital API. */
 const CapitalPrices = async (tokens, data) => {
     const params = new URLSearchParams();
     if (data?.timeframe) params.append("resolution", data?.timeframe);
@@ -79,10 +75,8 @@ const CapitalPrices = async (tokens, data) => {
     return { prices: res?.prices }
 }
 
-/**
- * Open a market position from Capital API.
- * @returns {} An object containing order details.
-*/
+
+/** Open a market position from Capital API. */
 const CapitalOpen = async (tokens, data) => {
     const order = await (await fetch(CapitalURL(tokens?.environment) + "/api/v1/positions", { method: "POST", headers: headers(tokens), body: JSON.stringify(data) })).json();
     const confirmation = await (await fetch(CapitalURL(tokens?.environment) + "/api/v1/confirms/" + order?.dealReference, { headers: headers(tokens) })).json();
@@ -91,10 +85,8 @@ const CapitalOpen = async (tokens, data) => {
     return { order, dealId: confirmation?.affectedDeals?.[0]?.dealId, level: confirmation?.level }
 }
 
-/**
- * Close a market position from Capital API.
- * @returns {} An object containing order details.
-*/
+
+/** Close a market position from Capital API. */
 const CapitalClose = async (tokens, dealId) => {
     const order = await (await fetch(CapitalURL(tokens?.environment) + "/api/v1/positions/" + dealId, { method: "DELETE", headers: headers(tokens) })).json();
     const confirmation = await (await fetch(CapitalURL(tokens?.environment) + "/api/v1/confirms/" + order?.dealReference, { headers: headers(tokens) })).json();
@@ -103,10 +95,8 @@ const CapitalClose = async (tokens, dealId) => {
     return { order, dealId: confirmation?.affectedDeals?.[0]?.dealId, level: confirmation?.level }
 }
 
-/**
- * Stream market data from Capital API.
- * @returns {} A function to close the stream.
-*/
+
+/** Stream market data from Capital API. */
 const CapitalStream = async (tokens, data, onUpdate, onError) => {
     let heartbeatInterval = null;
     let lastTime = null;

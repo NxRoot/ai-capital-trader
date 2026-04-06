@@ -1,8 +1,10 @@
 
+/** Parse JSON block. */
 const parseJson = (text) => {
     const cleaned = text?.match(/```(?:json)?\s*\n?([\s\S]*?)```/i)?.[1]?.trim() ?? text ?? "";
     try { return JSON.parse(cleaned) } catch (err) { return "FAILED TO PARSE RESPONSE" }
 }
+
 
 /** Calls Anthropic Claude with the current prompt. */
 async function callAnthropic(config, messages, model = 'claude-opus-4-6') {
