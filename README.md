@@ -5,6 +5,7 @@ An automated trading bot for [Capital.com](https://capital.com) with AI decision
 ## Features
 
 - **Capital Live Trading** — Connects to Capital.com via REST API and WebSocket for real-time order execution
+- **AI Decision Making** - Analizes market data with AI and decides possible entries based on multiple indicators.
 - **Demo & Live Support** — Switch between demo and live environments by editing configuration file
 - **Extremely Flexible** — Runs on any device including Raspberry Pi, VPS, or low-power servers
 
