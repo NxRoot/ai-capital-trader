@@ -33,8 +33,10 @@ const missing = (keys, cfg) => {
 const conf = (cfg) => {
     cfg = cfg ? resolve(cfg) : join(process.cwd(), "config.json")
     if (!existsSync(cfg)) {
-        console.error("Missing config.json file. Create one in the root directory with your Capital API credentials and trading preferences.")
-        console.log(`Edit Config: ${cfg}`)
+        console.log("")
+        console.log("\x1b[31mMISSING CONFIG FILE\x1b[0m\n")
+        console.log(`cpt "/path/to/config.json"`)
+        console.log("")
         process.exit(1)
     }
     const res = JSON.parse(readFileSync(cfg, 'utf-8'));

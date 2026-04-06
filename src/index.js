@@ -38,8 +38,7 @@ const openPosition = async (trade) => {
     if (!order.error && order?.dealId && trade?.signal) {
         const { tp, sl } = getLevels(order.level, trade.signal, config?.tp || trade.takeProfit, config?.sl || trade.stopLoss)
         open = { direction: trade.signal, price: order?.level, dealId: order?.dealId, tp, sl }
-        if(trade?.signal === "BUY") console.green(`[OPEN-BUY] Price: ${order?.level?.toFixed(4)} | Take Profit: ${tp?.toFixed(4)} | Stop Loss: ${sl?.toFixed(4)}`)
-        else console.red(`[OPEN-SELL] Price: ${order?.level?.toFixed(4)} | Take Profit: ${tp?.toFixed(4)} | Stop Loss: ${sl?.toFixed(4)}`)
+        console?.[trade?.signal === "BUY" ? "green" : "red"]?.(`[OPEN-${trade?.signal}] Price: ${order?.level?.toFixed(4)} | Take Profit: ${tp?.toFixed(4)} | Stop Loss: ${sl?.toFixed(4)}`)
     }
     else console.red(`[ERROR] ${JSON.stringify(order.error)}`)
 }
@@ -47,7 +46,7 @@ const openPosition = async (trade) => {
 const closePosition = async (price, profit) => {
     const order = await CapitalClose(tokens, open?.dealId);
     if (!order.error) {
-        console.yellow(`[CLOSE-${open?.direction}] Price: ${price?.toFixed(4)} | Profit: ${profit?.toFixed(4)}`)
+        console.yellow(`[CLOSE-${open?.direction}] Price: ${price?.toFixed(4)} | Profit: ${profit?.toFixed(2)}`)
         open = null
     }
     else console.red(`[ERROR] ${JSON.stringify(order.error)}`)
@@ -65,22 +64,18 @@ const onUpdate = async (payload) => {
 
     // Add new candle to data
     data.push(streamToCandle(payload))
-    const price = data[data.length - 1].close
     
     // Close position if open
     if(open?.dealId) {
-
         const isBuy = open?.direction === "BUY"
+        const price = data[data.length - 1].close
         const currentPrice = price * Number(config.orderSize)
         const openPrice = open.price * Number(config.orderSize)
-
         const hitTP = isBuy ? price >= open?.tp : price <= open?.tp
         const hitSL = isBuy ? price <= open?.sl : price >= open?.sl
         const profit = isBuy ? (currentPrice - openPrice) : (openPrice - currentPrice)
-
-        if(hitTP) return await closePosition(price, profit)
-        if(hitSL) return await closePosition(price, profit)
-        return console.white(`[HOLD] Looking for opportunity to close position...`);
+        if(hitTP || hitSL) return await closePosition(price, profit)
+        return console.white(`[HOLD] Looking for opportunity to close position...`)
     }
   
     // Calculate metrics
