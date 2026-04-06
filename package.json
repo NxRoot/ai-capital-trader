@@ -8,10 +8,7 @@
   "scripts": {
     "start": "node src/index.js"
   },
-  "files": [
-    "src/",
-    "config.json"
-  ],
+  "files": ["src/"],
   "author": "",
   "license": "ISC",
   "description": "",

@@ -26,14 +26,20 @@ let started = false
 // #                    Functions                   #
 // ##################################################
 
+const getLevels = (entry, direction, tpPct, slPct) => {
+    const tpF = Number(tpPct) / 100
+    const slF = Number(slPct) / 100
+    if (direction === "BUY") return { tp: entry * (1 + tpF), sl: entry * (1 - slF) }
+    return { tp: entry * (1 - tpF), sl: entry * (1 + slF) }
+}
+
 const openPosition = async (trade) => {
     const order = await CapitalOpen(tokens, { epic: config.epic, direction: trade.signal, size: Number(config.orderSize) });
     if (!order.error && order?.dealId && trade?.signal) {
-        const tp = trade?.signal === "BUY" ? order?.level * Number(config.tp) : order?.level / Number(config.tp)
-        const sl = trade?.signal === "BUY" ? order?.level / Number(config.sl) : order?.level * Number(config.sl)
+        const { tp, sl } = getLevels(order.level, trade.signal, config?.tp || trade.takeProfit, config?.sl || trade.stopLoss)
         open = { direction: trade.signal, price: order?.level, dealId: order?.dealId, tp, sl }
-        if(trade?.signal === "BUY") console.green(`[OPEN-BUY] Price: ${order?.level?.toFixed(2)} | Take Profit: ${tp?.toFixed(2)} | Stop Loss: ${sl?.toFixed(2)}`)
-        else console.red(`[OPEN-SELL] Price: ${order?.level?.toFixed(2)} | Take Profit: ${tp?.toFixed(2)} | Stop Loss: ${sl?.toFixed(2)}`)
+        if(trade?.signal === "BUY") console.green(`[OPEN-BUY] Price: ${order?.level?.toFixed(4)} | Take Profit: ${tp?.toFixed(4)} | Stop Loss: ${sl?.toFixed(4)}`)
+        else console.red(`[OPEN-SELL] Price: ${order?.level?.toFixed(4)} | Take Profit: ${tp?.toFixed(4)} | Stop Loss: ${sl?.toFixed(4)}`)
     }
     else console.red(`[ERROR] ${JSON.stringify(order.error)}`)
 }
@@ -41,7 +47,7 @@ const openPosition = async (trade) => {
 const closePosition = async (price, profit) => {
     const order = await CapitalClose(tokens, open?.dealId);
     if (!order.error) {
-        console.yellow(`[CLOSE-${open?.direction}] Price: ${price?.toFixed(2)} | Profit: ${profit?.toFixed(2)}`)
+        console.yellow(`[CLOSE-${open?.direction}] Price: ${price?.toFixed(4)} | Profit: ${profit?.toFixed(4)}`)
         open = null
     }
     else console.red(`[ERROR] ${JSON.stringify(order.error)}`)
@@ -93,9 +99,8 @@ const onUpdate = async (payload) => {
     if((response?.signal === "BUY" || response?.signal === "SELL") && response?.confidence !== 'LOW') {
         return await openPosition(response)
     }
-
-    if(response?.signal === "HOLD") {
-        console.white(`[HOLD] ${response?.reasoning}`)
+    else {
+        console.white(`[HOLD] Looking for opportunity to open position...`)
     }
 }
 
@@ -149,8 +154,6 @@ const main = async () => {
         console.log(`Environment: ${config?.environment}`)
         console.log(`Total Balance: ${login?.account?.currencySymbol} ${(login?.account?.accountInfo?.balance ?? 0).toFixed(2)}`)
         console.log(`Available Balance: ${login?.account?.currencySymbol} ${(login?.account?.accountInfo?.available ?? 0).toFixed(2)}`)
-        console.log(`Take Profit: ${(Number(config?.tp) ?? 0)}`)
-        console.log(`Stop Loss: ${(Number(config?.sl) ?? 0)}`)
         console.log("")
         started = true
     }

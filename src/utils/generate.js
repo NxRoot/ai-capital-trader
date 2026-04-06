@@ -90,7 +90,7 @@ RESISTANCE_REJECTION: ${structure.resistanceRejection}
 
 
 Respond ONLY with RAW JSON format:
-{ "signal": "BUY" | "SELL" | "HOLD", "confidence": "LOW" | "MEDIUM" | "HIGH", "reasoning": "Reason for decision, 150 chars" }
+{ "signal": "BUY" | "SELL" | "HOLD", "confidence": "LOW" | "MEDIUM" | "HIGH", "takeProfit": "percentage, e.g. 0.075", "stopLoss": "percentage, e.g. 0.075" }
 `
 
 module.exports = { callAnthropic, callOpenAI, makePrompt };

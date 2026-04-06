@@ -7,7 +7,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 
 // List of required configuration properties
-const required = ["username", "password", "apiKey", "epic", "timeframe", "orderSize", "environment", "tp", "sl"]
+const required = ["username", "password", "apiKey", "epic", "timeframe", "orderSize", "environment"]
 
 
 // Custom console log functions with timestamps and colors

@@ -38,10 +38,10 @@ Create `config.json`
   "epic": "BTCUSD",
   "orderSize": "0.025",
   "timeframe": "MINUTE_15",
-  "max": "1000",
   "tokens": "15000",
-  "tp": "1.00075",
-  "sl": "1.00075"
+  "max": "1000",
+  "tp": "",
+  "sl": ""
 }
 ```
 
@@ -55,10 +55,10 @@ Create `config.json`
 | `epic` | Market identifier | `"BTCUSD"`, `"EURUSD"` |
 | `orderSize` | Position size per trade | `"0.025"` |
 | `timeframe` | Candle interval | `"MINUTE_15"`, `"MINUTE"` |
-| `max` | Historical candles to fetch | `"1000"` |
 | `tokens` | Max AI tokens to use | `"15000"` |
-| `tp` | Take Profit amount * Price | `"1.00075"` |
-| `sl` | Stop Loss amount / Price | `"1.00075"` |
+| `max` | Historical candles to fetch | `"1000"` |
+| `tp` | Take Profit % (Empty to autogenerate) | `"0.075"` |
+| `sl` | Stop Loss % (Empty to autogenerate) | `"0.075"` |
 
 
 ## Usage

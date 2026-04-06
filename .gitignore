@@ -2,3 +2,4 @@ node_modules
 xinstall.bat
 config.json
 *.tgz
+*.json
