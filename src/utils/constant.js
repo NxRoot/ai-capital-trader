@@ -31,7 +31,7 @@ const missing = (keys, cfg) => {
 
 // Function to load and validate configuration from a JSON file
 const conf = (cfg) => {
-    cfg = cfg ? resolve(cfg) : join(process.cwd(), "config.json")
+    cfg = resolve(cfg)
     if (!existsSync(cfg)) {
         console.log("")
         console.log("\x1b[31mMISSING CONFIG FILE\x1b[0m\n")

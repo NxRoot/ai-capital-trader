@@ -61,12 +61,7 @@ Create `config.json`
 
 ## Usage
 
-Start bot with config on current folder
-```py
-cpt
-```
-
-Start bot with specific config file
+Start bot with config file
 ```py
 cpt "/path/to/config.json"
 ```
