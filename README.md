@@ -39,7 +39,6 @@ Create `config.json`
   "orderSize": "0.025",
   "timeframe": "MINUTE_15",
   "tokens": "15000",
-  "max": "1000",
   "tp": "",
   "sl": ""
 }
@@ -56,7 +55,6 @@ Create `config.json`
 | `orderSize` | Position size per trade | `"0.025"` |
 | `timeframe` | Candle interval | `"MINUTE_15"`, `"MINUTE"` |
 | `tokens` | Max AI tokens to use | `"15000"` |
-| `max` | Historical candles to fetch | `"1000"` |
 | `tp` | Take Profit % (Empty to autogenerate) | `"0.075"` |
 | `sl` | Stop Loss % (Empty to autogenerate) | `"0.075"` |
 

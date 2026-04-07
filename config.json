@@ -8,7 +8,6 @@
     "timeframe": "MINUTE",
     "anthropicKey": "",
     "tokens": "15000",
-    "max": "1000",
     "tp": "",
     "sl": ""
 }

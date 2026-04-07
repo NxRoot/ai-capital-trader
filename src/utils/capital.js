@@ -66,8 +66,8 @@ const CapitalPositions = async (tokens) => {
 /** Get market bar values from Capital API. */
 const CapitalPrices = async (tokens, data) => {
     const params = new URLSearchParams();
+    params.append("max", "1000");
     if (data?.timeframe) params.append("resolution", data?.timeframe);
-    if (data?.max) params.append("max", data?.max.toString());
     if (data?.from) params.append("from", data?.from);
     if (data?.to) params.append("to", data?.to);
     const res = await (await fetch(CapitalURL(tokens?.environment) + `/api/v1/prices/${data.epic}?` + params, { headers: headers(tokens) })).json();
