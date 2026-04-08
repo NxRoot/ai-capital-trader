@@ -40,6 +40,28 @@ function streamToCandle(candle) {
 }
 
 
+/** Get market status from opening hours. */
+const getMarketStatus = (hours, minutes = 10) => {
+    if (!hours) return "closed";
+    const now = new Date();
+    const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+    const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    const dayKey = days[now.getUTCDay()];
+    const todayHours = hours[dayKey] || [];
+    for (const range of todayHours) {
+        const [startStr, endStr] = range.split(' - ');
+        const [sh, sm] = startStr.split(':').map(Number);
+        const [eh, em] = endStr.split(':').map(Number);
+        const startMin = sh * 60 + sm;
+        const endMin = (eh === 0 && em === 0) ? 1440 : eh * 60 + em;
+        if (currentMinutes >= startMin && currentMinutes <= endMin) return "open";
+        if((endMin - currentMinutes) <= minutes) return "closing";
+        if((currentMinutes - startMin) >= minutes) return "opening";
+    }
+    return "closed";
+}
+
+
 /** Login to the Capital API and retrieve session tokens. */
 const CapitalLogin = async (tokens, data) => {
     const request = (await fetch(CapitalURL(tokens?.environment) + "/api/v1/session", {
@@ -61,6 +83,13 @@ const CapitalPositions = async (tokens) => {
     if (res?.errorCode) return { error: res };
     return { positions: res?.positions }
 }
+
+/** Get market from Capital API. */
+const CapitalMarket = async (tokens, epic) => {
+	const res = await (await fetch(CapitalURL(tokens?.environment) + '/api/v1/markets?epics=' + epic, { headers: headers(tokens) })).json();
+	if (res?.errorCode) return {error: res};
+	return res;
+};
 
 
 /** Get market bar values from Capital API. */
@@ -177,7 +206,9 @@ module.exports = {
     CapitalPositions,
     CapitalOpen,
     CapitalClose,
+    CapitalMarket,
     CapitalStream,
     toCandle,
-    streamToCandle
+    streamToCandle,
+    getMarketStatus
 }

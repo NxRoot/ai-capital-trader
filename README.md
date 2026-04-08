@@ -38,12 +38,14 @@ Create `config.json`
   "epic": "BTCUSD",
   "orderSize": "0.025",
   "timeframe": "MINUTE_15",
+  "confidence": "MEDIUM",
   "tokens": "15000",
   "tp": "",
   "sl": ""
 }
 ```
 
+See More: [Capital.com API Documentation](https://open-api.capital.com/)
 | Key | Description | Example |
 |-----|-------------|---------|
 | `username` | Capital.com login email | `user@example.com` |
@@ -54,6 +56,8 @@ Create `config.json`
 | `epic` | Market identifier | `"BTCUSD"`, `"EURUSD"` |
 | `orderSize` | Position size per trade | `"0.025"` |
 | `timeframe` | Candle interval | `"MINUTE_15"`, `"MINUTE"` |
+| `temperature` | AI exploration rate | `"0.0"` |
+| `confidence` | Min AI confidence to trade | `"LOW"`, `"MEDIUM"`, `"HIGH"` |
 | `tokens` | Max AI tokens to use | `"15000"` |
 | `tp` | Take Profit % (Empty to autogenerate) | `"0.075"` |
 | `sl` | Stop Loss % (Empty to autogenerate) | `"0.075"` |

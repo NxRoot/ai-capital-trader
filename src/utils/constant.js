@@ -13,8 +13,8 @@ const required = ["username", "password", "apiKey", "epic", "timeframe", "orderS
 // Custom console log functions with timestamps and colors
 global.console.red = (txt) => console.log(`\x1b[31m${new Date().toLocaleTimeString()}`, txt, '\x1b[0m')
 global.console.white = (txt) => console.log(`\x1b[0m${new Date().toLocaleTimeString()}`, txt, '\x1b[0m')
-global.console.green = (txt) => console.log(`\x1b[32m${new Date().toLocaleTimeString()}`, txt, '\x1b[0m')
 global.console.yellow = (txt) => console.log(`\x1b[33m${new Date().toLocaleTimeString()}`, txt, '\x1b[0m')
+global.console.cyan = (txt) => console.log(`\x1b[36m${new Date().toLocaleTimeString()}`, txt, '\x1b[0m')
 
 
 // Function to display missing required properties and exit the process

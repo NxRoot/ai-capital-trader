@@ -11,7 +11,7 @@ async function callAnthropic(config, messages, model = 'claude-opus-4-6') {
 	const res = await fetch('https://api.anthropic.com/v1/messages', {
 		method: 'POST',
 		headers: { 'x-api-key': config?.anthropicKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-		body: JSON.stringify({ model, max_tokens: Number(config?.tokens) || 10000, messages }),
+		body: JSON.stringify({ model, max_tokens: Number(config?.tokens) || 10000, temperature: Number(config?.temperature) || 0.0, messages }),
 	});
 	if (!res.ok) throw new Error(`Anthropic API error ${res.status}: ${await res.text()}`);
 	const data = await res.json();

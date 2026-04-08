@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 process.removeAllListeners('warning');
 
-const { CapitalLogin, CapitalPrices, CapitalOpen, CapitalClose, CapitalStream, toCandle, streamToCandle } = require('./utils/capital');
+const { CapitalLogin, CapitalPrices, CapitalOpen, CapitalClose, CapitalStream, toCandle, streamToCandle, CapitalMarket, getMarketStatus } = require('./utils/capital');
 const { conf, delay } = require('./utils/constant');
 const { makePrompt } = require('./utils/generate');
 const { calcMetrics, calcStructure} = require('./utils/strategy');
@@ -19,7 +19,7 @@ let data = []
 let open = null
 let stream = null
 let reauth = null
-let started = false
+let openingHours = null
 
 
 // ##################################################
@@ -38,7 +38,7 @@ const openPosition = async (trade) => {
     if (!order.error && order?.dealId && trade?.signal) {
         const { tp, sl } = getLevels(order.level, trade.signal, config?.tp || trade.takeProfit, config?.sl || trade.stopLoss)
         open = { direction: trade.signal, price: order?.level, dealId: order?.dealId, tp, sl }
-        console?.[trade?.signal === "BUY" ? "green" : "red"]?.(`[OPEN-${trade?.signal}] Price: ${order?.level?.toFixed(4)} | Take Profit: ${tp?.toFixed(4)} | Stop Loss: ${sl?.toFixed(4)}`)
+        console?.[trade?.signal === "BUY" ? "cyan" : "red"]?.(`[OPEN-${trade?.signal}] Price: ${order?.level?.toFixed(4)} | Take Profit: ${tp?.toFixed(4)} | Stop Loss: ${sl?.toFixed(4)}`)
     }
     else console.red(`[ERROR] ${JSON.stringify(order.error)}`)
 }
@@ -59,11 +59,17 @@ const closePosition = async (price, profit) => {
 
 const onUpdate = async (payload) => {
 
-    // Prevent duplicate candles
-    if (payload?.t === data?.[data?.length - 1]?.timestamp) return;
+    // Sync last candle
+    if (payload?.t === data?.[data?.length - 1]?.timestamp) {
+        data[data.length - 1].close = payload?.c
+        return
+    }
 
     // Add new candle to data
     data.push(streamToCandle(payload))
+
+    // Get market status
+    const status = getMarketStatus(openingHours)
     
     // Close position if open
     if(open?.dealId) {
@@ -74,9 +80,16 @@ const onUpdate = async (payload) => {
         const hitTP = isBuy ? price >= open?.tp : price <= open?.tp
         const hitSL = isBuy ? price <= open?.sl : price >= open?.sl
         const profit = isBuy ? (currentPrice - openPrice) : (openPrice - currentPrice)
-        if(hitTP || hitSL) return await closePosition(price, profit)
+        const nearClose = status === "closing"
+        if(hitTP || hitSL || nearClose) {
+            if(nearClose) console.white(`[HOLD] Market will close shortly, closing position...`)
+            return await closePosition(price, profit)
+        }
         return console.white(`[HOLD] Looking for opportunity to close position...`)
     }
+    
+    // Wait for market to open
+    if (status !== "open") return console.white(`[HOLD] Waiting for market to be open...`)
   
     // Calculate metrics
     const metrics = calcMetrics(data)
@@ -90,8 +103,13 @@ const onUpdate = async (payload) => {
     // Call AI
     const response = await callAnthropic(config, [{ role: 'user', content: prompt }])
 
+    // Check confidence
+    const types = ["LOW", "MEDIUM", "HIGH"]
+    const minConfidence = types.indexOf(config?.confidence?.toUpperCase() || types[0])
+    const modelCofidence = types.indexOf(response?.confidence?.toUpperCase() || types[0])
+
     // Check for trade
-    if((response?.signal === "BUY" || response?.signal === "SELL") && response?.confidence !== 'LOW') {
+    if((response?.signal === "BUY" || response?.signal === "SELL") && modelCofidence >= minConfidence) {
         return await openPosition(response)
     }
     else {
@@ -126,20 +144,23 @@ const main = async () => {
     tokens.securityToken = login?.securityToken
     tokens.apiKey = config?.apiKey
 
-    // Get market prices
-    const { prices, error } = await CapitalPrices(tokens, config)
-    if (!prices || prices.length === 0 || error) {
-        console.red(`[PRICES ERROR] -> ${error?.errorCode ? JSON.stringify(error) : "No prices data. Check your API connection or configuration."}`)
-        return
-    }
+    if(!data?.length) {
 
-    // Map prices to candles
-    if (!data?.length) data = prices?.map(toCandle)?.slice(0, -1)
+        // Get market details
+        const { marketDetails } = await CapitalMarket(tokens, config?.epic)
+        openingHours = marketDetails?.[0]?.instrument?.openingHours
 
-    // Start stream
-    stream = await CapitalStream(tokens, config, onUpdate, console.error)
+        // Get market prices
+        const { prices, error } = await CapitalPrices(tokens, config)
+        if (!prices || prices.length === 0 || error) {
+            console.red(`[PRICES ERROR] -> ${error?.errorCode ? JSON.stringify(error) : "No prices data. Check your API connection or configuration."}`)
+            return
+        }
 
-    if (!started) {
+        // Map prices to candles
+        data = prices?.map(toCandle)
+
+        // Display startup info
         console.log("")
         console.log(`Size: ${Number(config?.orderSize)}`)
         console.log(`Epic: ${config?.epic}`)
@@ -150,8 +171,12 @@ const main = async () => {
         console.log(`Total Balance: ${login?.account?.currencySymbol} ${(login?.account?.accountInfo?.balance ?? 0).toFixed(2)}`)
         console.log(`Available Balance: ${login?.account?.currencySymbol} ${(login?.account?.accountInfo?.available ?? 0).toFixed(2)}`)
         console.log("")
-        started = true
+        console.log("Waiting for candles to sync... Press Ctrl+C to stop the bot.")
+        console.log("")
     }
+
+    // Start stream
+    stream = await CapitalStream(tokens, config, onUpdate, console.error)
 
     // Reauthenticate in 8 minutes
     reauth = setInterval(async () => { await delay(3000); main() }, 8 * 60 * 1000)
