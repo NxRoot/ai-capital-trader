@@ -21,7 +21,7 @@ An automated trading bot for [Capital.com](https://capital.com) with AI decision
 ## Installation
 
 ```perl
-npm i -g https://github.com/NxRoot/ai-capital-trader
+npm i -g ai-capital-trader
 ```
 
 ## Configuration
