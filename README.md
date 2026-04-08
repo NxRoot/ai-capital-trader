@@ -1,6 +1,6 @@
 # AI Capital Trader
 
-An automated trading bot for [Capital.com](https://capital.com) with AI decision making via Claude or ChatGPT.
+An automated trading bot for [Capital.com](https://capital.com) with AI decision making via Claude or ChatGPT
 
 <img width="100%" height="100%" alt="cpt" src="https://github.com/user-attachments/assets/c9e303f8-2e45-44c5-8af9-9087edd6d952" />
 
@@ -8,7 +8,7 @@ An automated trading bot for [Capital.com](https://capital.com) with AI decision
 ## Features
 
 - **Capital Live Trading** — Connects to Capital.com via REST API and WebSocket for real-time order execution
-- **AI Decision Making** - Analizes market data with AI and decides possible entries based on multiple indicators.
+- **AI Decision Making** - Analizes market with AI and decides possible entries based on multiple indicators
 - **Demo & Live Support** — Switch between demo and live environments by editing configuration file
 - **Extremely Flexible** — Runs on any device including Raspberry Pi, VPS, or low-power servers
 

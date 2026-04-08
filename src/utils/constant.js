@@ -1,4 +1,4 @@
-const { resolve, join } = require('path');
+const { resolve } = require('path');
 const { existsSync, readFileSync } = require('fs');
 
 
