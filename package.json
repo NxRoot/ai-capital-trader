@@ -1,6 +1,6 @@
 {
   "name": "ai-capital-trader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "src/index.js",
   "bin": {
     "cpt": "src/index.js"
@@ -9,7 +9,9 @@
     "start": "node src/index.js",
     "release": "npm version patch && git push && git push --tags && npm publish"
   },
-  "files": ["src/"],
+  "files": [
+    "src/"
+  ],
   "author": "",
   "license": "ISC",
   "description": "",
