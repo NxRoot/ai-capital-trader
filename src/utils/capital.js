@@ -44,9 +44,9 @@ function streamToCandle(candle) {
 const getMarketStatus = (hours, minutes = 10) => {
     if (!hours) return "closed";
     const now = new Date();
-    const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-    const dayKey = days[now.getUTCDay()];
+    const dayKey = days[now.getDay()];
     const todayHours = hours[dayKey] || [];
     for (const range of todayHours) {
         const [startStr, endStr] = range.split(' - ');
@@ -54,12 +54,18 @@ const getMarketStatus = (hours, minutes = 10) => {
         const [eh, em] = endStr.split(':').map(Number);
         const startMin = sh * 60 + sm;
         const endMin = (eh === 0 && em === 0) ? 1440 : eh * 60 + em;
-        if (currentMinutes >= startMin && currentMinutes <= endMin) return "open";
-        if((endMin - currentMinutes) <= minutes) return "closing";
-        if((currentMinutes - startMin) >= minutes) return "opening";
+        // Open / closing
+        if (currentMinutes >= startMin && currentMinutes < endMin) {
+            if (endMin - currentMinutes <= minutes) return "closing";
+            return "open";
+        }
+        // Opening soon
+        if (currentMinutes < startMin && (startMin - currentMinutes) <= minutes) {
+            return "opening";
+        }
     }
     return "closed";
-}
+};
 
 
 /** Login to the Capital API and retrieve session tokens. */
