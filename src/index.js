@@ -187,7 +187,7 @@ const main = async () => {
 
     // Secondary trade catcher
     catcher = setInterval(async () => {
-        if(open?.dealId) {
+        if(open?.dealId && tokens?.cst && tokens?.securityToken) {
             // Get market prices
             const { prices, error } = await CapitalPrices(tokens, {...config, max: 1, to: new Date()?.toISOString()?.split(".")?.[0]});
             if (!prices || prices.length === 0 || error) return
