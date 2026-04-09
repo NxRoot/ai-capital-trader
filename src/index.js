@@ -19,6 +19,7 @@ let data = []
 let open = null
 let stream = null
 let reauth = null
+let catcher = null
 let openingHours = null
 
 
@@ -52,6 +53,16 @@ const closePosition = async (price, profit) => {
     else console.red(`[ERROR] ${JSON.stringify(order.error)}`)
 }
 
+const checkLimits = (price) => {
+    const isBuy = open?.direction === "BUY"
+    const currentPrice = price * Number(config.orderSize)
+    const openPrice = open.price * Number(config.orderSize)
+    const hitTP = isBuy ? price >= open?.tp : price <= open?.tp
+    const hitSL = isBuy ? price <= open?.sl : price >= open?.sl
+    const profit = isBuy ? (currentPrice - openPrice) : (openPrice - currentPrice)
+    return { hitTP, hitSL, profit }
+}
+
 
 // ##################################################
 // #                  Stream Loop                   #
@@ -73,13 +84,8 @@ const onUpdate = async (payload) => {
     
     // Close position if open
     if(open?.dealId) {
-        const isBuy = open?.direction === "BUY"
         const price = data[data.length - 1].close
-        const currentPrice = price * Number(config.orderSize)
-        const openPrice = open.price * Number(config.orderSize)
-        const hitTP = isBuy ? price >= open?.tp : price <= open?.tp
-        const hitSL = isBuy ? price <= open?.sl : price >= open?.sl
-        const profit = isBuy ? (currentPrice - openPrice) : (openPrice - currentPrice)
+        const { hitTP, hitSL, profit } = checkLimits(price)
         const nearClose = status === "closing"
         if(hitTP || hitSL || nearClose) {
             if(nearClose) console.white(`[HOLD] Market will close shortly, closing position...`)
@@ -127,6 +133,7 @@ const main = async () => {
     // Close stream
     stream?.()
     clearInterval(reauth)
+    clearInterval(catcher)
 
     // Reset tokens
     tokens.cst = ""
@@ -178,10 +185,31 @@ const main = async () => {
     // Start stream
     stream = await CapitalStream(tokens, config, onUpdate, console.error)
 
+    // Secondary trade catcher
+    catcher = setInterval(async () => {
+        if(open?.dealId) {
+            // Get market prices
+            const { prices, error } = await CapitalPrices(tokens, {...config, max: 1, to: new Date()?.toISOString()?.split(".")?.[0]});
+            if (!prices || prices.length === 0 || error) return
+            // Close position if open
+            const price = toCandle(prices?.[0])?.close
+            const { hitTP, profit } = checkLimits(price)
+            if(hitTP) return await closePosition(price, profit)
+        }
+     }, 5000)
+
     // Reauthenticate in 8 minutes
     reauth = setInterval(async () => { await delay(3000); main() }, 8 * 60 * 1000)
 }
 main()
 
-process.on('SIGINT', async () => { stream?.(); process.exit(0); });
-process.on('SIGTERM', async () => { stream?.(); process.exit(0); });
+
+// Handle graceful exit
+const handleExit = async () => { 
+    stream?.(); 
+    clearInterval(reauth); 
+    clearInterval(catcher); 
+    process.exit(0); 
+}
+process.on('SIGINT', handleExit);
+process.on('SIGTERM', handleExit);
