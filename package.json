@@ -1,6 +1,6 @@
 {
   "name": "ai-capital-trader",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "main": "src/index.js",
   "bin": {
     "cpt": "src/index.js"
