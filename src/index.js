@@ -2,10 +2,9 @@
 process.removeAllListeners('warning');
 
 const { CapitalLogin, CapitalPrices, CapitalOpen, CapitalClose, CapitalStream, toCandle, streamToCandle, CapitalMarket, getMarketStatus } = require('./utils/capital');
+const { calcMetrics, calcStructure } = require('./utils/strategy');
+const { callAnthropic, makePrompt } = require('./utils/generate');
 const { conf, delay } = require('./utils/constant');
-const { makePrompt } = require('./utils/generate');
-const { calcMetrics, calcStructure} = require('./utils/strategy');
-const { callAnthropic } = require('./utils/generate');
 
 
 // ##################################################
@@ -40,6 +39,19 @@ const openPosition = async (trade) => {
         const { tp, sl } = getLevels(order.level, trade.signal, config?.tp || trade.takeProfit, config?.sl || trade.stopLoss)
         open = { direction: trade.signal, price: order?.level, dealId: order?.dealId, tp, sl }
         console?.[trade?.signal === "BUY" ? "cyan" : "red"]?.(`[OPEN-${trade?.signal}] Price: ${order?.level?.toFixed(4)} | Take Profit: ${tp?.toFixed(4)} | Stop Loss: ${sl?.toFixed(4)}`)
+        // Secondary trade catcher
+        clearInterval(catcher)
+        catcher = setInterval(async () => {
+            if(open?.dealId && tokens?.cst && tokens?.securityToken) {
+                // Get market prices
+                const { prices, error } = await CapitalPrices(tokens, {...config, max: 1, to: new Date()?.toISOString()?.split(".")?.[0]});
+                if (!prices || prices.length === 0 || error) return
+                // Close position if open
+                const price = toCandle(prices?.[0])?.close
+                const { hitTP, profit } = checkLimits(price)
+                if(hitTP) return await closePosition(price, profit)
+            }
+        }, 5000)
     }
     else console.red(`[ERROR] ${JSON.stringify(order.error)}`)
 }
@@ -133,7 +145,6 @@ const main = async () => {
     // Close stream
     stream?.()
     clearInterval(reauth)
-    clearInterval(catcher)
 
     // Reset tokens
     tokens.cst = ""
@@ -185,19 +196,6 @@ const main = async () => {
     // Start stream
     stream = await CapitalStream(tokens, config, onUpdate, console.error)
 
-    // Secondary trade catcher
-    catcher = setInterval(async () => {
-        if(open?.dealId && tokens?.cst && tokens?.securityToken) {
-            // Get market prices
-            const { prices, error } = await CapitalPrices(tokens, {...config, max: 1, to: new Date()?.toISOString()?.split(".")?.[0]});
-            if (!prices || prices.length === 0 || error) return
-            // Close position if open
-            const price = toCandle(prices?.[0])?.close
-            const { hitTP, profit } = checkLimits(price)
-            if(hitTP) return await closePosition(price, profit)
-        }
-     }, 5000)
-
     // Reauthenticate in 8 minutes
     reauth = setInterval(async () => { await delay(3000); main() }, 8 * 60 * 1000)
 }
@@ -205,11 +203,6 @@ main()
 
 
 // Handle graceful exit
-const handleExit = async () => { 
-    stream?.(); 
-    clearInterval(reauth); 
-    clearInterval(catcher); 
-    process.exit(0); 
-}
+const handleExit = async () => { stream?.(); clearInterval(reauth); clearInterval(catcher); process.exit(0); }
 process.on('SIGINT', handleExit);
 process.on('SIGTERM', handleExit);
